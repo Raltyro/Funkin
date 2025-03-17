@@ -532,7 +532,7 @@ class ChartEditorDialogHandler
 
     instrumentalBox.onClick = function(_)
     {
-      Dialogs.openBinaryFile('Open Instrumental', [{label: 'Audio File (.ogg)', extension: 'ogg'}], function(selectedFile:SelectedFileInfo)
+      Dialogs.openBinaryFile('Open Instrumental', FileUtil.FILE_EXTENSION_INFO_AUDIO, function(selectedFile:SelectedFileInfo)
       {
         if (selectedFile != null && selectedFile.bytes != null)
         {
@@ -567,17 +567,8 @@ class ChartEditorDialogHandler
       }
       else
       {
-        var message:String = if (!ChartEditorState.SUPPORTED_MUSIC_FORMATS.contains(path.ext ?? ''))
-        {
-          'File format (${path.ext}) not supported for instrumental track (${path.file}.${path.ext})';
-        }
-        else
-        {
-          'Failed to load instrumental track (${path.file}.${path.ext}) for variation (${state.selectedVariation})';
-        }
-
         // Tell the user the load was successful.
-        state.error('Failed to Load Instrumental', message);
+        state.error('Failed to Load Instrumental', 'Failed to load instrumental track (${path.file}.${path.ext}) for variation (${state.selectedVariation})');
       }
     };
 

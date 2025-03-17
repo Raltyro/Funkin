@@ -109,7 +109,7 @@ class ChartEditorUploadVocalsDialog extends ChartEditorBaseDialog
 
       vocalsEntry.onClick = function(_event)
       {
-        Dialogs.openBinaryFile('Open $charName Vocals', [{label: 'Audio File (.ogg)', extension: 'ogg'}], function(selectedFile)
+        Dialogs.openBinaryFile('Open $charName Vocals', FileUtil.FILE_EXTENSION_INFO_AUDIO, function(selectedFile)
         {
           if (selectedFile != null && selectedFile.bytes != null)
           {

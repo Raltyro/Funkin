@@ -13,6 +13,7 @@ import funkin.audio.waveform.WaveformSprite;
 import flixel.util.FlxColor;
 import haxe.io.Bytes;
 import haxe.io.Path;
+import lime.media.AudioBuffer;
 
 /**
  * Functions for loading audio for the chart editor.
@@ -69,6 +70,7 @@ class ChartEditorAudioHandler
    */
   public static function loadVocalsFromBytes(state:ChartEditorState, bytes:Bytes, charId:String, instId:String = '', wipeFirst:Bool = false):Bool
   {
+    if (AudioBuffer.getCodec(bytes) == null) return false;
     var trackId:String = '${charId}${instId == '' ? '' : '-${instId}'}';
     if (wipeFirst) wipeVocalData(state);
     state.audioVocalTrackData.set(trackId, bytes);
@@ -119,9 +121,11 @@ class ChartEditorAudioHandler
    */
   public static function loadInstFromBytes(state:ChartEditorState, bytes:Bytes, instId:String = '', wipeFirst:Bool = false):Bool
   {
+    if (AudioBuffer.getCodec(bytes) == null) return false;
     if (instId == '') instId = 'default';
     if (wipeFirst) wipeInstrumentalData(state);
     state.audioInstTrackData.set(instId, bytes);
+    trace('instId: ${instId} bytes:${state.audioInstTrackData.get(instId)?.length}');
     return true;
   }
 

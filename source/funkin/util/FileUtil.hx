@@ -49,6 +49,12 @@ class FileUtil
   };
   #end
 
+  // All supported audio file formats supported by haxeflixel.
+  public static final FILE_EXTENSION_INFO_AUDIO:Array<FileDialogExtensionInfo> = [{
+    extension: 'ogg, mp3, wav, opus, flac',
+    label: 'Audio File (*.ogg, *.mp3, *.wav, *.opus, *.flac)',
+  }];
+
   /**
    * Paths which should not be deleted or modified by scripts.
    */
