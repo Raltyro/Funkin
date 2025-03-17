@@ -112,19 +112,21 @@ class Paths implements ConsoleClass
     return getPath('$directory$key.srt', TEXT, library);
   }
 
-  public static function sound(key:String, ?library:String):String
+  public static function sound(key:String, ?library:String, extension:String = ''):String
   {
-    return getPath('sounds/$key.${Constants.EXT_SOUND}', SOUND, library);
+    if (extension == '') extension = Constants.EXT_SOUND;
+    return getPath('sounds/$key.${extension}', SOUND, library);
   }
 
-  public static function soundRandom(key:String, min:Int, max:Int, ?library:String):String
+  public static function soundRandom(key:String, min:Int, max:Int, ?library:String, extension:String = ''):String
   {
-    return sound(key + FlxG.random.int(min, max), library);
+    return sound(key + FlxG.random.int(min, max), library, extension);
   }
 
-  public static function music(key:String, ?library:String):String
+  public static function music(key:String, ?library:String, extension:String = ''):String
   {
-    return getPath('music/$key.${Constants.EXT_SOUND}', MUSIC, library);
+    if (extension == '') extension = Constants.EXT_SOUND;
+    return getPath('music/$key.${extension}', MUSIC, library);
   }
 
   public static function videos(key:String, ?library:String):String
@@ -139,24 +141,25 @@ class Paths implements ConsoleClass
     return getPath('videos/$key.${Constants.EXT_VIDEO}', BINARY, library ?? 'videos');
   }
 
-  public static function voices(song:String, ?suffix:String = ''):String
+  public static function voices(song:String, ?suffix:String = '', extension:String = ''):String
   {
-    if (suffix == null) suffix = ''; // no suffix, for a sorta backwards compatibility with older-ish voice files
 
-    return 'songs:assets/songs/${song.toLowerCase()}/Voices$suffix.${Constants.EXT_SOUND}';
+    if (suffix == null) suffix = ''; // no suffix, for a sorta backwards compatibility with older-ish voice files
+    if (extension == '') extension = Constants.EXT_SOUND;
+    return 'songs:assets/songs/${song.toLowerCase()}/Voices$suffix.${extension}';
   }
 
   /**
    * Gets the path to an `Inst.mp3/ogg` song instrumental from songs:assets/songs/`song`/
    * @param song name of the song to get instrumental for
    * @param suffix any suffix to add to end of song name, used for `-erect` variants usually
-   * @param withExtension if it should return with the audio file extension `.mp3` or `.ogg`.
+   * @param extension The audio file extension of the track. If empty, the default extension is passed.
    * @return String
    */
-  public static function inst(song:String, ?suffix:String = '', withExtension:Bool = true):String
+  public static function inst(song:String, ?suffix:String = '', extension:String = ''):String
   {
-    var ext:String = withExtension ? '.${Constants.EXT_SOUND}' : '';
-    return 'songs:assets/songs/${song.toLowerCase()}/Inst$suffix$ext';
+    if (extension == '') extension = Constants.EXT_SOUND;
+    return 'songs:assets/songs/${song.toLowerCase()}/Inst$suffix.${extension}';
   }
 
   public static function image(key:String, ?library:String):String

@@ -49,6 +49,12 @@ class FileUtil
   };
   #end
 
+  // All supported audio file formats supported by haxeflixel.
+  public static final FILE_EXTENSION_INFO_AUDIO:Array<FileDialogExtensionInfo> = [{
+    extension: 'ogg, mp3, wav, opus, flac',
+    label: 'Audio File (*.ogg, *.mp3, *.wav, *.opus, *.flac)',
+  }];
+
   /**
    * Paths which should not be deleted or modified by scripts.
    */
@@ -310,8 +316,8 @@ class FileUtil
     return false;
     #end
   }
-
   /**
+
    * Prompts the user to save multiple files.
    * On desktop, this will prompt the user for a directory, then write all of the files to there.
    * On HTML5, this will zip the files up and prompt the user to save that.

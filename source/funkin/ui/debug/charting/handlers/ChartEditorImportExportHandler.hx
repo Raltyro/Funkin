@@ -297,8 +297,7 @@ class ChartEditorImportExportHandler
       if (variMetadata == null) continue;
 
       var instId:String = variMetadata?.playData?.characters?.instrumental ?? '';
-
-      var instFileName:String = manifest.getInstFileName(instId);
+      var instFileName:String = manifest.getInstFileName(instId, fileEntries);
       var instFileBytes:Bytes = mappedFileEntries.get(instFileName)?.data ?? throw 'Could not locate instrumental ($instFileName).';
       if (!ChartEditorAudioHandler.loadInstFromBytes(state, instFileBytes, instId)) throw 'Could not load instrumental ($instFileName).';
 
@@ -306,7 +305,7 @@ class ChartEditorImportExportHandler
       var playerVoiceList:Array<String> = variMetadata?.playData.characters?.playerVocals ?? [playerCharId];
       for (voice in playerVoiceList)
       {
-        var playerVocalsFileName:String = manifest.getVocalsFileName(voice, variation);
+        var playerVocalsFileName:String = manifest.getVocalsFileName(voice, variation, fileEntries);
         var playerVocalsFileBytes:Null<Bytes> = mappedFileEntries.get(playerVocalsFileName)?.data;
         if (playerVocalsFileBytes == null)
         {
@@ -324,7 +323,7 @@ class ChartEditorImportExportHandler
       var opponentVoiceList:Array<String> = variMetadata?.playData.characters?.opponentVocals ?? [opponentCharId];
       for (voice in opponentVoiceList)
       {
-        var opponentVocalsFileName:String = manifest.getVocalsFileName(voice, variation);
+        var opponentVocalsFileName:String = manifest.getVocalsFileName(voice, variation, fileEntries);
         var opponentVocalsFileBytes:Null<Bytes> = mappedFileEntries.get(opponentVocalsFileName)?.data;
         if (opponentVocalsFileBytes == null)
         {
