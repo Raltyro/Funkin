@@ -286,7 +286,7 @@ class OptionsMenu extends Page<OptionsMenuPageName>
 
   function onMenuChange(selected:TextMenuItem):Void
   {
-    camFocusPoint.y = selected.y;
+    camFocusPoint.y = selected.y + selected.height * 0.5;
   }
 
   function createItem(name:String, callback:Void->Void, fireInstantly = false):TextMenuItem
