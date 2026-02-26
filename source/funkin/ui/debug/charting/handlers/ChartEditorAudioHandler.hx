@@ -159,8 +159,6 @@ class ChartEditorAudioHandler
     var instTrack:Null<FunkinSound> = SoundUtil.buildSoundFromBytes(instTrackData);
     if (instTrack == null) return false;
 
-    instTrack.important = true;
-
     stopExistingInstrumental(state);
     state.audioInstTrack = instTrack;
     state.postLoadInstrumental();
@@ -192,8 +190,6 @@ class ChartEditorAudioHandler
 
     // early return
     if (vocalTrack == null) return false;
-
-    vocalTrack.important = true;
 
     switch (charType)
     {
@@ -299,7 +295,7 @@ class ChartEditorAudioHandler
       if (state.stretchySound1 == null) return;
 
       // Prevent spam playing that could cause issues.
-      if (state.stretchySound1?.isPlaying ?? false || state.stretchySound2?.isPlaying ?? false) return;
+      if (state.stretchySound1?.playing ?? false || state.stretchySound2?.playing ?? false) return;
 
       state.stretchySounds = !state.stretchySounds;
       state.stretchySound1.play(true);
@@ -311,7 +307,7 @@ class ChartEditorAudioHandler
       if (state.stretchySound2 == null) return;
 
       // Prevent spam playing that could cause issues.
-      if (state.stretchySound1?.isPlaying ?? false || state.stretchySound2?.isPlaying ?? false) return;
+      if (state.stretchySound1?.playing ?? false || state.stretchySound2?.playing ?? false) return;
 
       state.stretchySounds = !state.stretchySounds;
       state.stretchySound2.play(true);
