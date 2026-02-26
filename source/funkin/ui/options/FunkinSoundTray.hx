@@ -120,26 +120,20 @@ class FunkinSoundTray extends FlxSoundTray
     active = true;
     alphaTarget = 1;
 
-    for (i in 0..._bars.length)
-      _bars[i].visible = i < getGlobalVolume(up);
-  }
-
-  function getGlobalVolume(up:Bool = false):Int
-  {
     var globalVolume:Int = Math.round(FlxG.sound.logToLinear(FlxG.sound.volume) * 10);
-
     if (FlxG.sound.muted || FlxG.sound.volume == 0) globalVolume = 0;
+
+    for (i in 0..._bars.length)
+      _bars[i].visible = i < globalVolume;
 
     if (!silent)
     {
       // This is a String currently, but there is or was a Flixel PR to change this to a FlxSound or a Sound bject
       var sound:String = up ? volumeUpSound : volumeDownSound;
-
       if (globalVolume == 10) sound = volumeMaxSound;
-      if (sound != null) FlxG.sound.load(sound).play().volume = 0.3;
-    }
 
-    return globalVolume;
+       if (sound != null) FlxG.sound.play(sound);
+    }
   }
 
   function saveVolumePreferences():Void

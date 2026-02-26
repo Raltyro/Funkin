@@ -2651,9 +2651,9 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
       return;
     }
 
-    if ((audioInstTrack != null && audioInstTrack.isPlaying) || audioVocalTrackGroup.playing) return;
+    if ((audioInstTrack != null && audioInstTrack.playing) || audioVocalTrackGroup.playing) return;
 
-    if (welcomeMusic.isPlaying) return;
+    if (welcomeMusic.playing) return;
 
     if (!welcomeMusic.exists) setupWelcomeMusic();
 
@@ -2974,7 +2974,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     {
       playbarHeadDragging = true;
 
-      if ((audioInstTrack != null && audioInstTrack.isPlaying) || audioVocalTrackGroup.playing)
+      if ((audioInstTrack != null && audioInstTrack.playing) || audioVocalTrackGroup.playing)
       {
         playbarHeadDraggingWasPlaying = true;
         stopAudioPlayback();
@@ -3745,7 +3745,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     // dispatchEvent gets called here.
     if (!super.beatHit()) return false;
 
-    if (metronomeVolume > 0.0 && !isPlaytesting && ((audioInstTrack != null && audioInstTrack.isPlaying) || audioVocalTrackGroup.playing))
+    if (metronomeVolume > 0.0 && !isPlaytesting && ((audioInstTrack != null && audioInstTrack.playing) || audioVocalTrackGroup.playing))
     {
       var currentMeasureTime:Float = Conductor.instance.getMeasureTimeInMs(Conductor.instance.currentMeasure);
       var currentStepTime:Float = Conductor.instance.getStepTimeInMs(Conductor.instance.currentStep);
@@ -3768,7 +3768,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     // dispatchEvent gets called here.
     if (!super.stepHit()) return false;
 
-    if ((audioInstTrack != null && audioInstTrack.isPlaying) || audioVocalTrackGroup.playing)
+    if ((audioInstTrack != null && audioInstTrack.playing) || audioVocalTrackGroup.playing)
     {
       if (healthIconDad != null) healthIconDad.onStepHit(Conductor.instance.currentStep);
       if (healthIconBF != null) healthIconBF.onStepHit(Conductor.instance.currentStep);
@@ -3808,11 +3808,11 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         }
       }
 
-      if ((!audioInstTrack.isPlaying || (audioVocalTrackGroup.length > 0 && !audioVocalTrackGroup.playing))
+      if ((!audioInstTrack.playing || (audioVocalTrackGroup.length > 0 && !audioVocalTrackGroup.playing))
         && currentScrollEase != scrollPositionInPixels) easeSongToScrollPosition(currentScrollEase);
     }
 
-    if ((audioInstTrack != null && audioInstTrack.isPlaying) || audioVocalTrackGroup.playing)
+    if ((audioInstTrack != null && audioInstTrack.playing) || audioVocalTrackGroup.playing)
     {
       currentScrollEase = scrollPositionInPixels;
 
@@ -4536,7 +4536,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
 
     shouldEase = true;
     if (shouldPause
-      && (audioInstTrack?.isPlaying || audioVocalTrackGroup.playing)) stopAudioPlayback(); // Only do this once, not every frame
+      && (audioInstTrack?.playing || audioVocalTrackGroup.playing)) stopAudioPlayback(); // Only do this once, not every frame
 
     // Resync the conductor and audio tracks.
     if (playheadAmount != 0) this.playheadPositionInPixels += playheadAmount;
@@ -4725,7 +4725,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
       {
         gridPlayheadScrollAreaPressed = true;
         // Stop audio playback while dragging on the grid playhead.
-        if ((audioInstTrack != null && audioInstTrack.isPlaying) || audioVocalTrackGroup.playing)
+        if ((audioInstTrack != null && audioInstTrack.playing) || audioVocalTrackGroup.playing)
         {
           playbarHeadDraggingWasPlaying = true;
           stopAudioPlayback();
@@ -5026,7 +5026,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     {
       notePreviewPlayHeadDragging = true;
       // Stop audio playback while dragging on the note preview playhead.
-      if ((audioInstTrack != null && audioInstTrack.isPlaying) || audioVocalTrackGroup.playing)
+      if ((audioInstTrack != null && audioInstTrack.playing) || audioVocalTrackGroup.playing)
       {
         playbarHeadDraggingWasPlaying = true;
         stopAudioPlayback();
@@ -7185,7 +7185,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
 
     currentScrollEase = this.scrollPositionInPixels;
 
-    if (audioInstTrack.isPlaying || audioVocalTrackGroup.playing)
+    if (audioInstTrack.playing || audioVocalTrackGroup.playing)
     {
       // Pause
       stopAudioPlayback();

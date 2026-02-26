@@ -329,6 +329,8 @@ class Song implements IPlayStateScriptedClass implements IRegistryEntry<SongMeta
         difficulty.difficultyRating = metadata.playData.ratings.get(diffId) ?? 0;
         difficulty.album = metadata.playData.album;
         difficulty.stickerPack = metadata.playData.stickerPack;
+        difficulty.previewStart = metadata.playData.previewStart;
+        if (metadata.playData.previewEnd > metadata.playData.previewStart) difficulty.previewEnd = metadata.playData.previewEnd;
 
         difficulty.stage = metadata.playData.stage;
         difficulty.noteStyle = metadata.playData.noteStyle;
@@ -793,6 +795,8 @@ class SongDifficulty
   public var difficultyRating:Int = 0;
   public var album:Null<String> = null;
   public var stickerPack:Null<String> = null;
+  public var previewStart:Int = 0;
+  public var previewEnd:Int = 15000;
 
   public function new(song:Song, diffId:String, variation:String)
   {
@@ -850,12 +854,17 @@ class SongDifficulty
 
   public function playInst(volume:Float = 1.0, instId:String = '', looped:Bool = false):Void
   {
+    buildInst(volume, instId, looped).play(true, 0);
+  }
+
+  public function buildInst(volume:Float = 1.0, instId:String = '', looped:Bool = false):FunkinSound
+  {
     var suffix:String = (instId != '') ? '-$instId' : '';
 
-    FlxG.sound.music = FunkinSound.load(Paths.inst(this.song.id, suffix), volume, looped, false, true, false, null, null, true);
+    var snd = FunkinSound.load(Paths.inst(this.song.id, suffix), volume, looped, false, false, false, null, null);
+    FunkinSound.setMusic(snd);
 
-    // Workaround for a bug where FlxG.sound.music.update() was being called twice.
-    FlxG.sound.list.remove(FlxG.sound.music);
+    return snd;
   }
 
   /**
@@ -1008,21 +1017,15 @@ class SongDifficulty
     for (playerVoice in playerVoiceList)
     {
       if (!Assets.exists(playerVoice)) continue;
-      result.addPlayerVoice(FunkinSound.load(playerVoice, 1.0, false, false, false, false, null, null, true));
+      result.addPlayerVoice(FunkinSound.load(playerVoice, 1.0, false, false, false, false, null, null));
     }
 
     // Add opponent vocals.
     for (opponentVoice in opponentVoiceList)
     {
       if (!Assets.exists(opponentVoice)) continue;
-      result.addOpponentVoice(FunkinSound.load(opponentVoice, 1.0, false, false, false, false, null, null, true));
+      result.addOpponentVoice(FunkinSound.load(opponentVoice, 1.0, false, false, false, false, null, null));
     }
-
-    // Sometimes the sounds don't set their important value to true, so we have to do this manually.
-    result.forEach(function(snd:FunkinSound)
-    {
-      snd.important = true;
-    });
 
     result.playerVoicesOffset = offsets.getVocalOffset(characters.player, instId);
     result.opponentVoicesOffset = offsets.getVocalOffset(characters.opponent, instId);

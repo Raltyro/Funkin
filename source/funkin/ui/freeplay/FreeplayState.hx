@@ -44,7 +44,7 @@ import funkin.ui.AtlasText;
 import funkin.ui.FullScreenScaleMode;
 import funkin.ui.MusicBeatSubState;
 import funkin.ui.freeplay.backcards.*;
-import funkin.ui.freeplay.components.DifficultySprite;
+import funkin.ui.freeplay.components.*;
 import funkin.ui.freeplay.charselect.PlayableCharacter;
 import funkin.ui.mainmenu.MainMenuState;
 import funkin.ui.story.Level;
@@ -271,6 +271,8 @@ class FreeplayState extends MusicBeatSubState
   var forceSkipIntro:Bool = false;
 
   public var freeplayArrow:Null<FlxText>;
+
+  var previewMusicData:Null<PreviewMusicData> = null;
 
   public function new(?params:FreeplayStateParams, ?stickers:StickerSubState)
   {
@@ -2190,6 +2192,8 @@ class FreeplayState extends MusicBeatSubState
     FlxG.cameras.remove(funnyCam);
     // Cancel all song preview timers just in case a preview loads after we exit.
     clearPreviews();
+    // Destroy the preview music data.
+    previewMusicData?.destroy();
   }
 
   function goBack():Void
@@ -2488,7 +2492,11 @@ class FreeplayState extends MusicBeatSubState
       }
 
       // Reset the song preview in case we changed variations (normal->erect etc)
-      if (currentVariation != previousVariation) playCurSongPreview();
+      if (currentVariation != previousVariation)
+      {
+        if (FlxG.sound.music != null) FlxG.sound.music.fadeOut(FADE_IN_DELAY);
+        FlxTimer.wait(FADE_IN_DELAY, playCurSongPreview.bind(currentCapsule));
+      }
     }
 
     // Set the album graphic and play the animation if relevant.
@@ -2777,6 +2785,7 @@ class FreeplayState extends MusicBeatSubState
     new FlxTimer().start(styleData?.getStartDelay(), function(tmr:FlxTimer)
     {
       FunkinSound.emptyPartialQueue();
+      FlxG.sound.music?.fadeOut(0.2, FlxEase.quadIn);
 
       #if FEATURE_TOUCH_CONTROLS
       if (backButton != null)
@@ -2787,6 +2796,7 @@ class FreeplayState extends MusicBeatSubState
       #end
       funnyCam.fade(FlxColor.BLACK, 0.2, false, function()
       {
+        FlxG.sound.music?.stop();
         Paths.setCurrentLevel(cap?.freeplayData?.levelId);
         LoadingState.loadPlayState({
           targetSong: targetSong,
@@ -2930,7 +2940,7 @@ class FreeplayState extends MusicBeatSubState
 
     if (grpCapsules.countLiving() > 0 && !prepForNewRank && uiStateMachine.canInteract())
     {
-      FlxG.sound.music?.pause();
+      if (FlxG.sound.music != null) FlxG.sound.music.fadeOut(FADE_IN_DELAY);
       FlxTimer.wait(FADE_IN_DELAY, playCurSongPreview.bind(currentCapsule));
       currentCapsule.selected = true;
 
@@ -2947,6 +2957,9 @@ class FreeplayState extends MusicBeatSubState
   {
     if (daSongCapsule == null) daSongCapsule = currentCapsule;
 
+    // Make sure the player is still hovering over the song we want to load preview for
+    if (!daSongCapsule.selected) return;
+
     var previewVolume:Float = 0.7;
     if (dj != null) previewVolume *= dj.getMusicPreviewMult();
 
@@ -2961,12 +2974,10 @@ class FreeplayState extends MusicBeatSubState
         overrideExisting: true,
         restartTrack: false
       });
-      if (FlxG.sound.music != null) FlxG.sound.music.fadeIn(2, 0, previewVolume);
+      FlxG.sound.music.fadeIn(PreviewMusicData.FADE_IN_DURATION, 0, previewVolume, PreviewMusicData.FADE_IN_EASE_FUNCTION);
     }
     else
     {
-      // Make sure the player is still hovering over the song we want to load preview for
-      if (!daSongCapsule.selected) return;
       var previewSong:Null<Song> = daSongCapsule?.freeplayData?.data;
       if (previewSong == null) return;
 
@@ -2986,35 +2997,27 @@ class FreeplayState extends MusicBeatSubState
       instSuffix = (instSuffix != '') ? '-$instSuffix' : '';
       // trace('Attempting to play partial preview: ${previewSong.id}:${instSuffix}');
 
-      FunkinSound.playMusic(previewSong.id, {
-        startingVolume: 0.0,
-        overrideExisting: true,
-        restartTrack: false,
-        mapTimeChanges: false, // The music metadata is not alongside the audio file so this won't work.
-        pathsFunction: INST,
-        suffix: instSuffix,
-        partialParams: {
-          loadPartial: true,
-          start: 0,
-          end: 0.2
-        },
-        onLoad: function()
-        {
-          FlxG.sound.music.fadeIn(2, 0, previewVolume);
+      if (FlxG.sound.music == null)
+      {
+        // Initialize the FlxG.sound.music if it haven't been created.
+        FunkinSound.setMusic(FunkinSound.load(null));
+      }
 
-          var fadeStart:Float = (FlxG.sound.music.length / 1000) - 2;
+      if (previewMusicData == null) previewMusicData = new PreviewMusicData();
+      previewMusicData.setAssetPath(Paths.inst(previewSong.id, instSuffix), songDifficulty?.previewStart, songDifficulty?.previewEnd, null,
+        function(musicData:PreviewMusicData)
+      {
+        // Check again if it's still selected.
+        if (!daSongCapsule.selected) return;
 
-          previewTimers.push(new FlxTimer().start(fadeStart, function(_)
-          {
-            FlxG.sound.music.fadeOut(2, 0);
-          }));
-
-          previewTimers.push(new FlxTimer().start(FlxG.sound.music.length / 1000, function(_)
-          {
-            playCurSongPreview();
-          }));
-        },
+        FlxG.sound.music.fadeTween?.cancel();
+        FlxG.sound.music.unload();
+        FlxG.sound.music.loadEmbedded(musicData);
+        FlxG.sound.music.volume = previewVolume;
+        FlxG.sound.music.looped = true;
+        FlxG.sound.music.play(true, 0);
       });
+
       if (songDifficulty != null)
       {
         Conductor.instance.mapTimeChanges(songDifficulty.timeChanges);

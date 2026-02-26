@@ -144,6 +144,8 @@ class GameOverSubState extends MusicBeatSubState
 
     parentPlayState = cast _parentState;
 
+    gameOverMusic = FunkinSound.load(null);
+
     //
     // Set up the visuals
     //
@@ -524,10 +526,11 @@ class GameOverSubState extends MusicBeatSubState
     }
     else if (gameOverMusic == null || !gameOverMusic.playing || force)
     {
-      if (gameOverMusic != null) gameOverMusic.stop();
-
-      gameOverMusic = FunkinSound.load(musicPath);
-      if (gameOverMusic == null) return;
+      if (gameOverMusic == null) gameOverMusic = FunkinSound.load(musicPath);
+      {
+        gameOverMusic.stop();
+        gameOverMusic.loadEmbedded(musicPath);
+      }
 
       gameOverMusic.volume = startingVolume;
       gameOverMusic.looped = !(isEnding || isStarting);
