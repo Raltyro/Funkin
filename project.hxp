@@ -878,7 +878,7 @@ class Project extends HXProject
 
     // Should be true on debug builds or if GITHUB_BUILD is enabled.
     FEATURE_DEBUG_FUNCTIONS.apply(this, isDebug() || GITHUB_BUILD.isEnabled(this));
-    FEATURE_RESULTS_DEBUG.apply(this, isDebug() || GITHUB_BUILD.isEnabled(this));
+    FEATURE_RESULTS_DEBUG.apply(this, true);
 
     // Should be true on desktop, non-tester builds.
     // We don't want testers to accidentally leak songs to their Discord friends!
@@ -1016,6 +1016,9 @@ class Project extends HXProject
   {
     // Enable OpenFL's error handler. Required for the crash logger.
     setHaxedef("openfl-enable-handle-error");
+
+    // Enable OpenFL's experimental event-pooling flag. Fixes the broken event allocation.
+    setHaxedef("openfl_pool_events");
 
     // Disable a macro in Lime that generates a random number for Assets.cache.version every build.
     // This doesn't seem to be of any use and it causes lime.utils.AssetCache to be re-compiled on every build.
@@ -1415,7 +1418,7 @@ class Project extends HXProject
     if (!isDisplay())
     {
       // Delete the assets folder from the export folder before adding anything.
-      clearAssets();
+      //clearAssets();
     }
 
     var exclude = EXCLUDE_ASSETS.concat(isWeb() ? EXCLUDE_ASSETS_WEB : EXCLUDE_ASSETS_NATIVE);

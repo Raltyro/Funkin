@@ -119,27 +119,14 @@ class RuntimeRainShader extends RuntimePostEffectShader
 
   public function new()
   {
-    super(Assets.getText(Paths.frag('rain')));
+    super();
+    _fromFile(Paths.frag('rain'), null, null);
     this.rainColor = 0xFF6680cc;
   }
 
   public function update(elapsed:Float):Void
   {
     time += elapsed;
-  }
-
-  override function __processGLData(source:String, storageType:String):Void
-  {
-    super.__processGLData(source, storageType);
-    if (storageType == 'uniform')
-    {
-      lights = [for (i in 0...MAX_LIGHTS)
-        {
-          position: addFloatUniform('lights[$i].position', 2),
-          color: addFloatUniform('lights[$i].color', 3),
-          radius: addFloatUniform('lights[$i].radius', 1),
-        }];
-    }
   }
 
   @:access(openfl.display.ShaderParameter)

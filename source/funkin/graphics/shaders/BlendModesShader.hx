@@ -12,7 +12,8 @@ class BlendModesShader extends FlxRuntimeShader
 
   public function new()
   {
-    super(Assets.getText(Paths.frag('blendModes')));
+    super();
+    _fromFile(Paths.frag('blendModes'), null, null);
   }
 
   public function setCamera(cameraData:BitmapData):Void

@@ -10,7 +10,8 @@ class MosaicEffect extends FlxRuntimeShader
 
   public function new()
   {
-    super(Assets.getText(Paths.frag('mosaic')));
+    super();
+    _fromFile(Paths.frag('mosaic'), null, null);
     setBlockSize(1.0, 1.0);
   }
 

@@ -12,7 +12,8 @@ class InverseDotsShader extends FlxRuntimeShader
 
   public function new(amount:Float = 1.0)
   {
-    super(Assets.getText(Paths.frag("InverseDots")));
+    super();
+    _fromFile(Paths.frag('InverseDots'), null, null);
     setAmount(amount);
   }
 

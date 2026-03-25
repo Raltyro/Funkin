@@ -1,21 +1,27 @@
 package funkin.graphics;
 
+import funkin.graphics.framebuffer.FixedBitmapData;
+import funkin.graphics.shaders.RuntimeCustomBlendShader;
+
 import animate.internal.RenderTexture;
-import flash.geom.ColorTransform;
-import flixel.FlxCamera;
-import flixel.graphics.FlxGraphic;
+
 import flixel.graphics.frames.FlxFrame;
+import flixel.graphics.tile.FlxDrawQuadsItem;
+import flixel.graphics.tile.FlxDrawTrianglesItem;
+import flixel.graphics.FlxGraphic;
 import flixel.math.FlxMatrix;
 import flixel.math.FlxRect;
 import flixel.system.FlxAssets.FlxShader;
-import funkin.graphics.framebuffer.FixedBitmapData;
-import funkin.graphics.shaders.RuntimeCustomBlendShader;
-import openfl.display.OpenGLRenderer;
-import openfl.Lib;
+import flixel.FlxCamera;
+
 import openfl.display.BitmapData;
 import openfl.display.BlendMode;
-import flixel.graphics.tile.FlxDrawQuadsItem;
-import flixel.graphics.tile.FlxDrawTrianglesItem;
+import openfl.display.OpenGLRenderer;
+import openfl.display.TriangleCulling;
+import openfl.display3D.Context3DWrapMode;
+import openfl.display3D.Context3DCompareMode;
+import openfl.geom.ColorTransform;
+import openfl.Lib;
 
 using funkin.graphics.framebuffer.BitmapDataUtil;
 
@@ -49,37 +55,6 @@ using funkin.graphics.framebuffer.BitmapDataUtil;
 @:access(openfl.geom.ColorTransform)
 class FunkinCamera extends FlxCamera
 {
-  /**
-   * Whether or not the device supports the OpenGL extension `KHR_blend_equation_advanced`.
-   * If `false`, a shader implementation will be used to render certain blend modes.
-   */
-  public static var hasKhronosExtension(get, never):Bool;
-
-  static inline function get_hasKhronosExtension():Bool
-  {
-    #if FORCE_BLEND_SHADER
-    return false;
-    #else
-    @:privateAccess
-    return OpenGLRenderer.__complexBlendsSupported ?? false;
-    #end
-  }
-
-  /**
-   * A list of blend modes that require the OpenGL extension `KHR_blend_equation_advanced`.
-   *
-   * NOTE:
-   *  - `LIGHTEN` is supported natively on desktop, but not other platforms.
-   *  - While `DARKEN` is supported natively on desktop, it causes issues with transparency.
-   */
-  static final KHR_BLEND_MODES:Array<BlendMode> = [DARKEN, HARDLIGHT, #if !desktop LIGHTEN, #end OVERLAY, DIFFERENCE, COLORDODGE, COLORBURN, SOFTLIGHT, EXCLUSION, HUE, SATURATION, COLOR, LUMINOSITY];
-
-  /**
-   * A list of blend modes that require the shader no matter what.
-   * This is due to these blend modes not being supported on any platform.
-   */
-  static final SHADER_REQUIRED_BLEND_MODES:Array<BlendMode> = [INVERT];
-
   /**
    * The ID of this camera, used for debugging.
    */
@@ -124,9 +99,17 @@ class FunkinCamera extends FlxCamera
   }
 
   override function drawPixels(?frame:FlxFrame, ?pixels:BitmapData, matrix:FlxMatrix, ?transform:ColorTransform, ?blend:BlendMode, ?smoothing:Bool = false,
-      ?shader:FlxShader):Void
+      ?shader:FlxShader, ?wrapMode:Context3DWrapMode, ?depthCompareMode:Context3DCompareMode):Void
   {
-    var shouldUseShader:Bool = (!hasKhronosExtension && KHR_BLEND_MODES.contains(blend)) || SHADER_REQUIRED_BLEND_MODES.contains(blend);
+    @:nullSafety(Off)
+    final shouldUseShader:Bool = switch (blend)
+    {
+      case DIFFERENCE, HARDLIGHT, OVERLAY, COLORDODGE, COLORBURN, SOFTLIGHT, EXCLUSION, HUE, SATURATION, COLOR, LUMINOSITY:
+        !OpenGLRenderer.__complexBlendsSupported;
+      case DARKEN, LIGHTEN:
+        !OpenGLRenderer.__blendMinMaxSupported && !OpenGLRenderer.__complexBlendsSupported;
+      default: false;
+    }
 
     // Fallback to the shader implementation if the device doesn't support `KHR_blend_equation_advanced`, or if
     // the specified blend mode requires the shader.
@@ -205,75 +188,12 @@ class FunkinCamera extends FlxCamera
       _cameraMatrix.scale(1 / (this.scaleX * clampedScale), 1 / (this.scaleY * clampedScale));
       _cameraMatrix.translate(((width - width / this.scaleX) * 0.5), ((height - height / this.scaleY) * 0.5));
 
-      super.drawPixels(_backgroundRenderTexture.graphic.imageFrame.frame, null, _cameraMatrix, null, null, smoothing, null);
+      super.drawPixels(_backgroundRenderTexture.graphic.imageFrame.frame, null, _cameraMatrix, null, null, smoothing, null, wrapMode, depthCompareMode);
     }
     else
     {
-      super.drawPixels(frame, pixels, matrix, transform, blend, smoothing, shader);
+      super.drawPixels(frame, pixels, matrix, transform, blend, smoothing, shader, wrapMode, depthCompareMode);
     }
-  }
-
-  override function startQuadBatch(graphic:FlxGraphic, colored:Bool, hasColorOffsets:Bool = false, ?blend:BlendMode, smooth:Bool = false,
-      ?shader:FlxShader):FlxDrawQuadsItem
-  {
-    // Can't batch complex non-coherent blends, so always force a new batch
-    if (hasKhronosExtension && !(OpenGLRenderer.__coherentBlendsSupported ?? false) && KHR_BLEND_MODES.contains(blend))
-    {
-      var itemToReturn = null;
-
-      if (FlxCamera._storageTilesHead != null)
-      {
-        itemToReturn = FlxCamera._storageTilesHead;
-        var newHead = FlxCamera._storageTilesHead.nextTyped;
-        itemToReturn.reset();
-        FlxCamera._storageTilesHead = newHead;
-      }
-      else
-      {
-        itemToReturn = new FlxDrawQuadsItem();
-      }
-
-      // TODO: catch this error when the dev actually messes up, not in the draw phase
-      if (graphic.isDestroyed) throw 'Cannot queue ${graphic.key}. This sprite was destroyed.';
-
-      itemToReturn.graphics = graphic;
-      itemToReturn.antialiasing = smooth;
-      itemToReturn.colored = colored;
-      itemToReturn.hasColorOffsets = hasColorOffsets;
-      itemToReturn.blend = blend;
-      @:nullSafety(Off)
-      itemToReturn.shader = shader;
-
-      itemToReturn.nextTyped = _headTiles;
-      _headTiles = itemToReturn;
-
-      if (_headOfDrawStack == null)
-      {
-        _headOfDrawStack = itemToReturn;
-      }
-
-      if (_currentDrawItem != null)
-      {
-        _currentDrawItem.next = itemToReturn;
-      }
-
-      _currentDrawItem = itemToReturn;
-
-      return itemToReturn;
-    }
-
-    return super.startQuadBatch(graphic, colored, hasColorOffsets, blend, smooth, shader);
-  }
-
-  override function startTrianglesBatch(graphic:FlxGraphic, smoothing:Bool = false, isColored:Bool = false, ?blend:BlendMode, ?hasColorOffsets:Bool,
-      ?shader:FlxShader):FlxDrawTrianglesItem
-  {
-    // Can't batch complex non-coherent blends, so always force a new batch
-    if (hasKhronosExtension
-      && !(OpenGLRenderer.__coherentBlendsSupported ?? false)
-      && KHR_BLEND_MODES.contains(blend)) return getNewDrawTrianglesItem(graphic, smoothing, isColored, blend, hasColorOffsets, shader);
-
-    return super.startTrianglesBatch(graphic, smoothing, isColored, blend, hasColorOffsets, shader);
   }
 
   override function destroy():Void

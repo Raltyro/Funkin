@@ -124,7 +124,7 @@ class Paths implements ConsoleClass
   {
     if (extension == null)
     {
-      var idx = key.lastIndexOf(".");
+      final idx = key.lastIndexOf(".");
       if (idx != -1)
       {
         extension = key.substr(idx + 1);
