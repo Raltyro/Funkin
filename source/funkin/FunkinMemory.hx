@@ -28,52 +28,10 @@ class FunkinMemory
    */
   public static inline function initialCache():Void
   {
-    var allImages:Array<String> = Assets.list();
-
-    for (file in allImages)
-    {
-      if (!(file.endsWith(".png") #if FEATURE_COMPRESSED_TEXTURES || file.endsWith(".astc") #end)
-        || file.contains("chart-editor")
-        || !file.contains("ui/"))
-      {
-        continue;
-      }
-
-      file = file.replace(" ", ""); // Handle stray spaces.
-
-      if (file.contains("shared") || Assets.exists('shared:$file', AssetType.IMAGE))
-      {
-        file = 'shared:$file';
-      }
-      permanentCacheTexture(file);
-    }
-
-    permanentCacheTexture(Paths.image("healthBar"));
-    permanentCacheTexture(Paths.image("menuDesat"));
-    permanentCacheTexture(Paths.image("notes", "shared"));
-    permanentCacheTexture(Paths.image("noteSplashes", "shared"));
-    permanentCacheTexture(Paths.image("noteStrumline", "shared"));
-    permanentCacheTexture(Paths.image("NOTE_hold_assets"));
     // dude
     permanentCacheTexture(Paths.image("fonts/bold", null));
     permanentCacheTexture(Paths.image("fonts/default", null));
     permanentCacheTexture(Paths.image("fonts/freeplay-clear", null));
-
-    var allSounds:Array<String> = Assets.list(AssetType.SOUND);
-
-    for (file in allSounds)
-    {
-      if (!file.endsWith(".ogg") || !file.contains("countdown/")) continue;
-
-      file = file.replace(" ", "");
-
-      if (file.contains("shared") || Assets.exists('shared:$file', AssetType.SOUND))
-      {
-        file = 'shared:$file';
-      }
-
-      permanentCacheSound(file);
-    }
 
     permanentCacheSound(Paths.sound("cancelMenu"));
     permanentCacheSound(Paths.sound("confirmMenu"));

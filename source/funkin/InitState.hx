@@ -421,6 +421,9 @@ class InitState extends FlxState
     #elseif AUDIO
     // -DAUDIO
     FlxG.switchState(() -> new funkin.ui.debug.AudioTestState());
+    #elseif BLEND
+    // -DBLEND
+    FlxG.switchState(() -> new funkin.ui.debug.BlendTestState());
     #else
     startGameNormally();
     #end

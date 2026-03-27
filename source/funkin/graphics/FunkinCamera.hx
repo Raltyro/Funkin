@@ -104,9 +104,9 @@ class FunkinCamera extends FlxCamera
     @:nullSafety(Off)
     final shouldUseShader:Bool = switch (blend)
     {
-      case DIFFERENCE, HARDLIGHT, OVERLAY, COLORDODGE, COLORBURN, SOFTLIGHT, EXCLUSION, HUE, SATURATION, COLOR, LUMINOSITY:
+      case DARKEN, DIFFERENCE, HARDLIGHT, OVERLAY, COLORDODGE, COLORBURN, SOFTLIGHT, EXCLUSION, HUE, SATURATION, COLOR, LUMINOSITY:
         !OpenGLRenderer.__complexBlendsSupported;
-      case DARKEN, LIGHTEN:
+      case LIGHTEN:
         !OpenGLRenderer.__blendMinMaxSupported && !OpenGLRenderer.__complexBlendsSupported;
       default: false;
     }
